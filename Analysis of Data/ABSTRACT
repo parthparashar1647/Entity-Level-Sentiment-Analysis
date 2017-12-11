@@ -1,0 +1,93 @@
+C. Sentiment Analysis:
+
+Product Name:->
+Entities
+
+Mobile Phones:->
+1.Screen
+2.Battery
+3.Sound Quality
+4.Fast/Slow
+5.Design
+6.Body
+
+Sentiment Text
+Polarity
+I already have complaints about the iPhone 7 & i just bought it an hour ago
+0
+@AppleSupport @VerizonSupport My iPhone 7 is losing service everywhere again. Second time. Second phone. Who wants to help?
+0
+Great phone,my Iphone 7
+1
+
+
+re:
+This module provides regular expression matching operations similar to those found in Perl. Both patterns and strings to be searched can be Unicode strings as well as 8-bit strings.
+Regular expressions use the backslash character ('\') to indicate special forms or to allow special characters to be used without invoking their special meaning. This collides with Python’s usage of the same character for the same purpose in string literals; for example, to match a literal backslash, one might have to write '\\\\' as the pattern string, because the regular expression must be \\, and each backslash must be expressed as \\ inside a regular Python string literal.
+The solution is to use Python’s raw string notation for regular expression patterns; backslashes are not handled in any special way in a string literal prefixed with 'r'. So r"\n" is a two-character string containing '\' and 'n', while "\n" is a one-character string containing a newline. Usually patterns will be expressed in Python code using this raw string notation.
+re.sub(pattern, repl, string, count=0, flags=0)
+Return the string obtained by replacing the leftmost non-overlapping occurrences of pattern in string by the replacement repl. If the pattern isn’t found, string is returned unchanged. repl can be a string or a function; if it is a string, any backslash escapes in it are processed. That is, \n is converted to a single newline character, \r is converted to a carriage return, and so forth. Unknown escapes such as \j are left alone. Back references, such as \6, are replaced with the substring matched by group 6 in the pattern
+
+TextBlob:
+
+TextBob is a new python natural language processing toolkit, which stands on the shoulders of giants like NLTK and Pattern, provides text mining, text analysis and text processing modules for python developers. We have used textblob for Language translations and sentiment analysis.
+ 
+How it works:
+Naive Bayes:
+Naïve Bayes is the method in which we train two different language models, one on each of the two tasks at hand. Then, to classify a text, the text’s likelihood is determined under the two language models. The text is then classified into the corpus that gave it the larger probability. The technique is rather straightforward, but it theoretically produces the optimal result assuming that the a priori probability of the two options (or theoretically n options) is equal. 
+P(Text && Classification n)  =  P (Text | Classification n) * P (Classification n) 
+If all of our original P(Classification 1)’s are constant, then the highest probability for the text will be given by choosing the highest P(Text | Classification n) or by choosing the classification that gives us the highest probability of the text. In theory, this framework of the noisy channel model is the best possible, but in practice it is limited by our ability to create accurate language models. Instead, for text classification it is common to switch to a less natural model that is more powerful and is this able to make better use of the data. Language models, even trigram models, are deeply flawed by their reliance on only immediate preceding text and these flaws are what opens up the possibility of more generic machine learning techniques to surpass them. Regardless, Naïve Bayes is a very natural way of handling the problem and is a good baseline for a classification model.
+ 
+ 
+Procedures:
+1.Converting the data in CSV into pandas Dataframe.
+test1_df=pd.read_csv('iphone.csv',encoding = "ISO-8859-1")
+ 
+2.Using python re to remove twitter classic lingo with words that can be classified by textblob. 
+ 
+            # Fix classic tweet lingo 
+            #tweet refers row of a Dataframe 
+            tweet = re.sub(r'\bthats\b', 'that is', tweet)
+            tweet = re.sub(r'\bive\b', 'i have', tweet)
+            tweet = re.sub(r'\bim\b', 'i am', tweet)
+            tweet = re.sub(r'\bya\b', 'yeah', tweet)
+            tweet = re.sub(r'\bcant\b', 'can not', tweet)
+            tweet = re.sub(r'\bwont\b', 'will not', tweet)
+            tweet = re.sub(r'\bid\b', 'i would', tweet)
+            tweet = re.sub(r'wtf', 'what the fuck', tweet)
+            tweet = re.sub(r'\bwth\b', 'what the hell', tweet)
+            tweet = re.sub(r'\br\b', 'are', tweet)
+            tweet = re.sub(r'\bu\b', 'you', tweet)
+            tweet = re.sub(r'\bk\b', 'OK', tweet)
+            tweet = re.sub(r'\bsux\b', 'sucks', tweet)
+            tweet = re.sub(r'\bno+\b', 'no', tweet)
+            tweet = re.sub(r'\bcoo+\b', 'cool', tweet)
+            tweet = re.sub(r'\\n', ' ', tweet)
+            tweet = re.sub(r'\\r', ' ', tweet)
+            tweet = re.sub(r'&gt;', '', tweet)
+            tweet = re.sub(r'&amp;', 'and', tweet)
+            tweet = re.sub(r'\$ *hit', 'shit', tweet)
+            tweet = re.sub(r' w\/', 'with', tweet)
+            tweet = re.sub(r'\ddelay', '\d delay', tweet)
+            tweet =re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', tweet)
+
+
+ 
+3. Using TextBlob to find polarity of the given sentence:
+Creation of textblob object
+ 
+tweet = TextBlob(tweet)
+ 
+Calculation of polarity 
+ 
+polr=float(tweet.sentiment.polarity)
+ 
+4.Converting the outputs into a data frame and plotting using MatPlotLib
+ 
+submission = pd.DataFrame({
+        "month": use2,
+        "polarity_iphone": list,
+        "polarity_oneplus": list1
+    })
+submission.plot( y=['polarity_iphone','polarity_oneplus'],kind="line") #type of plot
+ 
