@@ -1,0 +1,64 @@
+ABSTRACT
+
+In real world, the tweets containing opinion is more valuable. So first here classification ‘s are done based on dictionary and “keywords” are searched .So in this we extract the tweets from twitter. One of the possible approaches were using TWEEPY API for python to extract tweet’s but the libraries included their can extract tweet’s on keyword only upto last 10 days. Figured out solution was using pyquery allows you to make jquery queries on XML and HTML  documents. Hence implementing web crawling on twitter's advanced search.
+Twitter Official API has the bother limitation of time constraints, you can't get older tweets than a week. Some tools provide access to older tweets but in the most of them you have to spend some money before. we were searching other tools to do this job but we didn't found it, so after analyze how Twitter Search through browser works we understand its flow. Basically when you enter on Twitter page a scroll loader starts, if you scroll down you start to get more and more tweets, all through calls to a JSON provider. After mimic we get the best advantage of Twitter Search on browsers, it can search the deepest oldest tweets.
+
+Tweet’s are extracted based on Date d1: start date and d2: end date, with count: total count of tweets so that while comparing the tweets of two devices approximation due to normalization can be reduced.Most work on sentiment analysis has relied on traditional “bag-of-words” method, which attempts to learn a positive or negative document classifier based on occurrence frequencies of the various words in the document. In our sentiment analysis model, instead of using all the words appearing in the news articles or tweets, we only extract the opinion-bearing words as the features to input into opinion mining algorithm. Opinion words that are primarily used to express subjective opinions in the opinion sentence are identified and extracted. Words that encode a desirable state (e.g., beautiful, awesome) have a positive orientation, while words that represent undesirable states have a negative orientation (e.g., disappointing).  
+
+tweetCriteria=got.manager.TweetCriteria().setQuerySearch('europerefugees').setSince("2015-05-01").setUntil("2015-09-30").setMaxTweets(1)	
+tweet = got.manager.TweetManager.getTweets(tweetCriteria)[0]
+The above is example how variable tweetCriteria store the extract tweet in tweet engine module
+
+
+Tweet Extraction code(Get Tweets-Python 2.7):
+Mentioned earlier Twitter API has it’s limitations in extracting the old tweets and so we use some tools provided to us for crawling to get old tweets from twitter. This section gives a brief details about module’s their utility,functioning and performance,
+
+Tweet.py
+This is the model named Tweet implementing Tweet class. Tweet class will be used to abstract the information of specific tweet.
+id (str)		: informs about the id of the given tweet for indexing.
+permalink (str)	: link to the data path used by crawler
+username (str)	: twitter handle of the user who created the tweet  
+text (str)	: Actual content (text) of tweets to be analysed 
+date (date) 	: date of creation of tweet
+retweets (int)	: store’s retweets of the tweet
+hashtags (str)	: stores the hashtag's assign to the tweet
+geo (str)	: stores the geographical location of the tweet creation
+
+TweetManager
+A manager class to help getting tweets in Tweet's model. 
+Uses Lbraries: urlib2 to process and get get url content,	json to get json formatted objects and parse them
+ 
+getTweets (TwitterCriteria): Return the list of tweets retrieved by using an instance of TwitterCriteria. Tweets are stored in a list of type Tweet  and response is received from another function named getJsonResponse(). To ensure performance improvement a TweeterBuffer[] is used so that when the list is being processed the responses are stored in temporary buffer.
+
+getJsonResponse (TwitterCriteria, refreshCursor): Return the responses of the url in json format. url: "https://twitter.com/i/search/timeline?f=tweets&q=%s&src=typd&max_position=%s" calls the twitter advanced search from browser and tweet’s are extracted based on TwitterCriteria. refreshCursor is used to point the cursor to the next tweet so that same tweet’s doesn't get repeated. dataJson stores the information using inbuilt function build_opener of json library in a json format and is returned.  
+TwitterCriteria
+A collection of search parameters to be used together with TweetManager.
+setUsername (str): An optional specific username from a twitter account. Without "@".
+setSince (str. "yyyy-mm-dd"): A lower bound date to restrict search.
+setUntil (str. "yyyy-mm-dd"): An upper bound date to restrict search.
+setQuerySearch (str): A query text to be matched.
+setTopTweets (bool): If True only the Top Tweets will be retrieved.
+setNear(str): A reference location area from where tweets were generated.
+setWithin (str): A distance radius from "near" location (e.g. 15mi).
+setMaxTweets (int): The maximum number of tweets to be retrieved. If this number is unsetted or lower than 1 all possible tweets will be retrieved.
+Main
+First function of main module is to check for system version and requirements and prompt the user to install the essential requirements used to build the application. This module use to integrate all the module’s together and via function main() inside used to print the extracted tweet in dataframe to be stored in csv format.
+month(str) : specifies the starting month from when the scraping is to be started.
+month1(str): specifies the month when the scrapping will end
+d1(str: “yyyy-mm-dd”): stores formatted start date of the month
+d2(str: “yyyy-mm-dd”): stores formatted end date of the month.
+tweetCriteria (TweetCriteria): used to set the criteria for query search using keyword with from and to date specified and get response as an object of tweetCriteria to be used in tweetManager
+tweet(Tweet): stores response tweet of type tweet by calling function getTweets (TweetCriteria) , using tweetCriteria as an argument.
+Count(int): used to store the total count of tweet’s extratcted till that instance.
+df(DataFrame): used to store tweet in a format called data frame to be converted to csv file with coloumn header’s as “username” and “tweet”.
+na(str): save location of csv file
+printTweet(Tweet): is function used to print the content of the tweet, used for debugging purpose. 
+
+
+Prerequisites for building the application:
+﻿lxml==3.5.0
+ pyquery==1.2.10
+python=2.7.*
+Command Line usage:
+Navigate to directory where Main.py is located and run it using the following command
+python Main.py
