@@ -1,0 +1,110 @@
+ # B. Extracting customer reviews from an E-commerce platform {Flipkart}:
+
+
+Buying electronic gadgets online has been in fashion since past 3-4 years as people get to know and compare all the specifications and features of the item they are interested in at one place and can also check for reviews of other customers who have brought the same product. 
+
+Buying a product based on someone else’s experience gives confidence to a customer and makes him aware about the failures of the product he may face in future while using the product.
+
+So, for this project, we intended to compare mobile phones based on the reviews given to multiple handsets by other customers. 
+
+We chose Flipkart as our reviews database because it is one of the most popular and reliable e-commerce website and majority of people prefer to share their experience with a product on Flipkart in detail.
+
+Web scraping using BeautifulSoup and Selenium:
+
+Beautiful Soup provides a few simple methods and Pythonic idioms for navigating,
+searching, and modifying a parse tree: a toolkit for dissecting a document and
+extracting information.
+
+Beautiful Soup automatically converts incoming documents to Unicode and outgoing
+documents to UTF-8. We don't have to think about encodings, unless the document
+doesn't specify an encoding and Beautiful Soup can't autodetect one. It sits on top of popular Python parsers like lxml and html5lib, allowing us to try out different parsing strategies or trade speed for flexibility.
+
+Selenium is a Web Browser Automation Tool.
+
+Primarily, it is for automating web applications for testing purposes, but is certainly not limited to just that. It allows you to open a browser of your choice & perform tasks as a human being would, such as:
+Clicking buttons
+Entering information in forms
+Searching for specific information on the web pages
+
+Using bs4 and Selenium to scrape customer reviews from Flipkart:
+
+Here, we used Beautiful Soup to scrape the content of the search page which opens up when a customer searches a particular product on Flipkart. Then, all the details of the searched results were stored in a result set(“collection” in the following code snippet) from which the url of the first searched result(“product_href”) was fetched using which we managed to find the product id ( “p_id” here) of the product searched by the customer.
+
+
+
+r = requests.get('http://www.flipkart.com/search?q='+p_name)
+data = r.content.decode(encoding='UTF-8')
+soup = BeautifulSoup(r.content.decode(encoding='UTF-8'), "lxml")
+collection = soup.find_all("div", {"class": "col MP_3W3 _31eJXZ"})
+href = []
+for c in collection:
+	a = c.find("a")
+	href.append(a['href'])
+product_href = href[0]
+s1 = product_href[:product_href.rfind("&srno")]
+p_id = s1.split("/p/")[1]
+
+
+
+This product id(“p_id”) was then used to go to the “reviews page” of the product and fetch all the customer reviews who bought the same product in the past. 
+
+Since we needed to at least 200 reviews per product for proper analysis and plotting graphs, we use Selenium to fetch reviews from the 1st customer review page till the 20th page.
+
+
+with closing(Firefox()) as browser:
+	site = "https://www.flipkart.com/"+p_name+"/product-reviews/"+p_id
+	browser.get(site)
+
+	file = open("review.txt", "w")
+
+	for count in range(1, 10):
+    	nav_btns = browser.find_elements_by_class_name('_33m_Yg')
+
+    	button = ""
+
+    	for btn in nav_btns:
+        	number = int(btn.text)
+        	if(number==count):
+            	button = btn
+            	break
+
+
+
+Some of the reviews were large in length as they narrated the customer’s experience with the product in detail and hence were of big importance to us. Initially, we were facing problem in fetching such reviews completely (content hidden in Read more…). But after taking some help from the internet, we were able to do that also using the following code snippet.
+
+
+    	read_more_btns = browser.find_elements_by_class_name('_1EPkIx')
+
+
+    	for rm in read_more_btns:
+        	browser.execute_script("return arguments[0].scrollIntoView();", rm)
+        	browser.execute_script("window.scrollBy(0, -150);")
+        	rm.click()
+
+
+Hence, all the complete customer reviews were fetched and stored in a resultset(“ans” in the following code snippet) from which the review title, content and date were separated and put into different columns of a Dataframe. In the end, the dataframe was converted in a csv file and the reviews were analysed.
+
+
+    	ans = soup.find_all("div", class_="_3DCdKt")
+
+    	for tag in ans:
+        	title = str(tag.find("p", class_="_2xg6Ul").string).replace(u"\u2018", "'").replace(u"\u2019", "'")
+        	title = remove_non_ascii_1(title)
+        	title.encode('ascii','ignore')
+        	content = tag.find("div", class_="qwjRop").div.prettify().replace(u"\u2018", "'").replace(u"\u2019", "'")
+        	content = remove_non_ascii_1(content)
+        	content.encode('ascii','ignore')
+        	content = content[15:-7]
+        	content = re.compile(r'<[^>]+>').sub('', content)
+        	content = content.replace('\n', '')
+        	date = str(tag.find_all("p", class_="_3LYOAd"))
+        	date = re.compile(r'<[^>]+>').sub('', date)
+   	#	date = date.rsplit(']', 1)[0]
+        	date = date[:-1]
+
+        	votes = tag.find_all("span", class_="_1_BQL8")
+        	upvotes = int(votes[0].string)
+        	downvotes = int(votes[1].string)
+
+        	file.write("%s | " % content )
+        	file.write("%s\n\n" % date)
